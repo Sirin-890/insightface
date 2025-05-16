@@ -29,16 +29,23 @@ def parse_args() -> argparse.Namespace:
 def func(args):
     image1 = cv2.imread(args.img1)
     image2 = cv2.imread(args.img2)
-    bboxes1, kpss1 = detector.autodetect(image1, max_num=1)
-    if bboxes1.shape[0]==0:
-        return -1.0, "Face not found in Image-1"
-    bboxes2, kpss2 = detector.autodetect(image2, max_num=1)
-    if bboxes2.shape[0]==0:
-        return -1.0, "Face not found in Image-2"
-    kps1 = kpss1[0]
-    kps2 = kpss2[0]
-    feat1 = rec.get(image1, kps1)
-    feat2 = rec.get(image2, kps2)
+    if image1 is None:
+        raise FileNotFoundError(f"Image not found or unable to read: {args.img1}")
+    if image2 is None:
+        raise FileNotFoundError(f"Image not found or unable to read: {args.img2}")
+
+    print(f"Image1 shape: {image1.shape}")
+    print(f"Image2 shape: {image2.shape}")
+    # bboxes1, kpss1 = detector.autodetect(image1, max_num=1)
+    # # if bboxes1.shape[0]==0:
+    # #     return -1.0, "Face not found in Image-1"
+    # bboxes2, kpss2 = detector.autodetect(image2, max_num=1)
+    # # if bboxes2.shape[0]==0:
+    # #     return -1.0, "Face not found in Image-2"
+    # kps1 = kpss1[0]
+    # kps2 = kpss2[0]
+    feat1 = rec.get_feat(image1)
+    feat2 = rec.get_feat(image2)
     sim = rec.compute_sim(feat1, feat2)
     if sim<0.2:
         conclu = 'They are NOT the same person'

@@ -73,15 +73,31 @@ class ArcFaceONNX:
         sim = np.dot(feat1, feat2) / (norm(feat1) * norm(feat2))
         return sim
 
+    # def get_feat(self, imgs):
+    #     if not isinstance(imgs, list):
+    #         imgs = [imgs]
+    #     input_size = self.input_size
+        
+    #     blob = cv2.dnn.blobFromImages(imgs, 1.0 / self.input_std, input_size,
+    #                                   (self.input_mean, self.input_mean, self.input_mean), swapRB=True)
+    #     net_out = self.session.run(self.output_names, {self.input_name: blob})[0]
+    #     return net_out
     def get_feat(self, imgs):
         if not isinstance(imgs, list):
             imgs = [imgs]
-        input_size = self.input_size
         
-        blob = cv2.dnn.blobFromImages(imgs, 1.0 / self.input_std, input_size,
-                                      (self.input_mean, self.input_mean, self.input_mean), swapRB=True)
+        # Filter out empty or None images
+        valid_imgs = [img for img in imgs if img is not None and img.size != 0]
+        if len(valid_imgs) == 0:
+            raise ValueError("Input image list is empty or contains only invalid images")
+        
+        input_size = self.input_size
+
+        blob = cv2.dnn.blobFromImages(valid_imgs, 1.0 / self.input_std, input_size,
+                                    (self.input_mean, self.input_mean, self.input_mean), swapRB=True)
         net_out = self.session.run(self.output_names, {self.input_name: blob})[0]
         return net_out
+
 
     def forward(self, batch_data):
         blob = (batch_data - self.input_mean) / self.input_std
